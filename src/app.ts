@@ -65,7 +65,7 @@ try {
   })
   if (port) {
     updateWheelLoop(port, [1, 1, -1, -1]);
-    await wait(100);
+    await wait(1000);
     updateWheelLoop(port, [0, 0, 0, 0]);
 
   }
