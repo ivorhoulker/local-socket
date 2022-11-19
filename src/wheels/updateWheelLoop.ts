@@ -7,10 +7,7 @@ let wheelLoop: NodeJS.Timeout;
 export async function updateWheelLoop(serial: SerialPort, vector: Vector4) {
     console.log('updating wheels', vector);
     const zero = arraysEqual(vector, [0, 0, 0, 0])
-    const wasWheelLoop = !!wheelLoop
-    if (wheelLoop) {
-        clearInterval(wheelLoop);
-    }
+
     if (zero) {
         sendCommand(serial, vector)
     }
@@ -25,7 +22,9 @@ export async function updateWheelLoop(serial: SerialPort, vector: Vector4) {
             }
         }, 2);
     }
-
+    if (wheelLoop) {
+        clearInterval(wheelLoop);
+    }
 }
 
 export async function sendCommand(serial: SerialPort, vector: Vector4) {
