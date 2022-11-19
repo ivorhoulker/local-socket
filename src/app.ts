@@ -77,11 +77,11 @@ io.sockets.on("connection", (socket) => {
   })
   socket.on("move", (data, callback) => {
     console.log("move data", data)
-    if (port) updateWheelLoop(port, data);
+    updateWheelLoop(port, data);
     callback()
   })
   socket.on("disconnect", () => {
-    if (port) updateWheelLoop(port, [0, 0, 0, 0]);
+    updateWheelLoop(port, [0, 0, 0, 0]);
   })
 })
 
