@@ -45,7 +45,7 @@ const io = new Server(httpServer, {
 
 
 
-const wheelWorker = new Worker('./wheelWorker.js');
+const wheelWorker = new Worker('./dist/wheelWorker.js');
 
 wheelWorker.postMessage([2, 2, -2, -2])
 await wait(3000)

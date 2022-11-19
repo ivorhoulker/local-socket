@@ -4,7 +4,7 @@
   "description": "mediasoup node server",
   "scripts": {
     "watch-node": "nodemon --ext ts --loader ts-node/esm --experimental-specifier-resolution=node dist/app.js",
-    "build-ts": "tsc && cp ./src/wheelWorker.js ./dist",
+    "build-ts": "tsc",
     "serve": "node --loader ts-node/esm --experimental-specifier-resolution=node dist/app.js",
     "start": "yarn serve",
     "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
