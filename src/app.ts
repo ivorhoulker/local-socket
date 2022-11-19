@@ -60,12 +60,13 @@ try {
   port.on("error", (err) => {
     console.error(err)
   })
-  if (port) {
-    updateWheelLoop(port, [2, 2, -2, -2]);
-    await wait(3000);
-    updateWheelLoop(port, [0, 0, 0, 0]);
 
-  }
+
+  updateWheelLoop(port, [2, 2, -2, -2]);
+  await wait(3000);
+  updateWheelLoop(port, [0, 0, 0, 0]);
+
+
 } catch (error) {
   console.error(error)
 }
@@ -75,7 +76,7 @@ io.sockets.on("connection", (socket) => {
   socket.on("handshake", (callback) => {
     callback("hi from the server")
   })
-  socket.on("move", (data, callback) => {
+  socket.on("move", async (data, callback) => {
     console.log("move data", data)
     updateWheelLoop(port, data);
     callback()

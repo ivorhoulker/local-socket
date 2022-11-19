@@ -4,7 +4,7 @@ import { arraysEqual } from '../helpers/arraysEqual';
 
 let wheelLoop: NodeJS.Timeout;
 
-export async function updateWheelLoop(serial: SerialPort, vector: Vector4) {
+export function updateWheelLoop(serial: SerialPort, vector: Vector4) {
     console.log('updating wheels', vector);
     const zero = arraysEqual(vector, [0, 0, 0, 0])
 
