@@ -7,7 +7,7 @@ import express from "express";
 import http from "http"
 import os from "os";
 import path from "path"
-import { sendCommand } from "wheels/updateWheelLoop";
+import { sendCommand } from "./wheels/updateWheelLoop";
 import { wait } from './helpers/wait';
 
 export const __dirname = path.resolve();
