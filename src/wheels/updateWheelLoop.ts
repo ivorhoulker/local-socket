@@ -14,7 +14,7 @@ export async function updateWheelLoop(serial: SerialPort, vector: Vector4) {
     if (!arraysEqual(vector, [0, 0, 0, 0])) {
         wheelLoop = setInterval(() => {
             try {
-                const cmd = getWheelCommand(vector);
+                const cmd = 'A' + vector[0] + 'B' + vector[1] + 'C' + vector[2] + 'D' + vector[3] + '|';
                 serial && serial.write(cmd);
             } catch (err) {
                 console.error(err);
