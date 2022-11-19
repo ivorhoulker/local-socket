@@ -10,9 +10,11 @@ export async function updateWheelLoop(serial: SerialPort, vector: Vector4) {
 
     if (zero) {
         sendCommand(serial, vector)
+        if (wheelLoop) clearInterval(wheelLoop);
     }
     //only loop if vector is not zero
     if (!zero) {
+        if (wheelLoop) clearInterval(wheelLoop);
         sendCommand(serial, vector)
         wheelLoop = setInterval(() => {
             try {
@@ -22,12 +24,10 @@ export async function updateWheelLoop(serial: SerialPort, vector: Vector4) {
             }
         }, 2);
     }
-    if (zero && wheelLoop) {
-        clearInterval(wheelLoop);
-    }
+
 }
 
-export async function sendCommand(serial: SerialPort, vector: Vector4) {
+export function sendCommand(serial: SerialPort, vector: Vector4) {
     const cmd = 'A' + vector[0] + 'B' + vector[1] + 'C' + vector[2] + 'D' + vector[3] + '|';
-    serial && serial.write(cmd);
+    if (serial) serial.write(cmd);
 }
