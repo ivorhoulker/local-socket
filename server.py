@@ -18,3 +18,8 @@ def handshake(sid, data):
 @sio.event
 def disconnect(sid):
     print("Disconnected SID >> ", sid)
+
+@sio.on('*')
+def catch_all(event, sid, data):
+    print("caught undefined event", event, sid, data)
+    pass

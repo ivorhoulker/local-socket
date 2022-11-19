@@ -1,9 +1,14 @@
+import { ReadlineParser } from '@serialport/parser-readline'
+import { SerialPort } from "serialport";
 import { Server } from "socket.io"
 import dotenv from "dotenv"
 import express from "express";
 import http from "http"
 import os from "os";
 import path from "path"
+import { updateWheelLoop } from './wheels/updateWheelLoop';
+import { wait } from './helpers/wait';
+
 export const __dirname = path.resolve();
 const local = getLocalIp();
 console.log({ local })
@@ -44,10 +49,29 @@ io.sockets.on("connection", (socket) => {
   socket.on("handshake", (callback) => {
     callback("hi from the server")
   })
-  socket.on("test", (callback) => {
+  socket.on("move", (data, callback) => {
     callback("test successful")
   })
 })
+
+try {
+  const port = new SerialPort({ path: '/dev/ttyACM0', baudRate: 115200, dataBits: 8, parity: "none" })
+  const parser = new ReadlineParser()
+  port.pipe(parser)
+  parser.on('data', console.log)
+  // port.write("HELLO")
+  port.on("error", (err) => {
+    console.error(err)
+  })
+  if (port) {
+    updateWheelLoop(port, [1, 1, -1, -1]);
+    await wait(100);
+    updateWheelLoop(port, [0, 0, 0, 0]);
+
+  }
+} catch (error) {
+  console.error(error)
+}
 
 
 
