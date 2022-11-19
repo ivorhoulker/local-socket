@@ -22,12 +22,12 @@ export function updateWheelLoop(serial: SerialPort, vector: Vector4) {
             } catch (err) {
                 console.error(err);
             }
-        }, 20);
+        }, 5);
     }
 
 }
 
 export function sendCommand(serial: SerialPort, vector: Vector4) {
     const cmd = 'A' + vector[0] + 'B' + vector[1] + 'C' + vector[2] + 'D' + vector[3] + '|';
-    if (serial) serial.write(cmd);
+    serial.write(cmd);
 }
