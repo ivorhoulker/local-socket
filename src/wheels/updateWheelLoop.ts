@@ -29,5 +29,5 @@ export function updateWheelLoop(serial: SerialPort, vector: Vector4) {
 
 export function sendCommand(serial: SerialPort, vector: Vector4) {
     const cmd = 'A' + vector[0] + 'B' + vector[1] + 'C' + vector[2] + 'D' + vector[3] + '|';
-    serial.write(cmd);
+    if (serial?.writable) serial.write(cmd);
 }
