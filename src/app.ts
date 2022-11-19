@@ -64,8 +64,8 @@ try {
     console.error(err)
   })
   if (port) {
-    updateWheelLoop(port, [1, 1, -1, -1]);
-    await wait(1000);
+    updateWheelLoop(port, [2, 2, -2, -2]);
+    await wait(3000);
     updateWheelLoop(port, [0, 0, 0, 0]);
 
   }
