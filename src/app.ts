@@ -48,11 +48,10 @@ const io = new Server(httpServer, {
 
 
 
-
 let port: SerialPort
 
 try {
-  const port = new SerialPort({ path: '/dev/ttyACM0', baudRate: 115200, dataBits: 8, parity: "none" })
+  port = new SerialPort({ path: '/dev/ttyACM0', baudRate: 115200, dataBits: 8, parity: "none" })
   const parser = new ReadlineParser()
   port.pipe(parser)
   parser.on('data', console.log)
