@@ -19,83 +19,6 @@ app.get("/", (req, res) => {
   res.send(`Hello from Ivor's app! This shows it exists.`);
 });
 
-export type ServerSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
-
-export interface ServerToClientEvents {
-  newProducer: () => void;
-  clientDisconnected: ({ }: {
-    socketId: string;
-    profileId?: string;
-    userId?: string;
-  }) => void;
-  areYouAlive: (callback: () => void) => void;
-}
-export type ConsumerType = "simulcast" | "svc" | "pipe" | "simple";
-
-export type Vector4 = [number, number, number, number];
-export interface ClientToServerEvents {
-  hello: () => void;
-  handshake: (callback: (e: string) => void) => void;
-  getRouterRtpCapabilities: (
-    callback: (routerRtpCapabilities: mediasoup.types.RtpCapabilities) => void
-  ) => void;
-  createProducerTransport: (
-    callback: ({
-      params,
-      error,
-    }: {
-      params?: mediasoup.types.TransportOptions;
-      error?: Error;
-    }) => void
-  ) => Promise<void>;
-  connectProducerTransport: (
-    data: {
-      dtlsParameters: mediasoup.types.DtlsParameters;
-    },
-    callback: () => void
-  ) => Promise<void>;
-  produce: (
-    data: {
-      kind: mediasoup.types.MediaKind;
-      rtpParameters: mediasoup.types.RtpParameters;
-      appData: Record<string, unknown>;
-    },
-    callback: ({ id }: { id: string }) => void
-  ) => Promise<void>;
-  createConsumerTransport: (
-    callback: (x: mediasoup.types.TransportOptions | Error) => void
-  ) => Promise<void>;
-  connectConsumerTransport: (
-    data: {
-      dtlsParameters: mediasoup.types.DtlsParameters;
-    },
-    callback: () => void
-  ) => Promise<void>;
-  consume: (
-    data: { rtpCapabilities: mediasoup.types.RtpCapabilities },
-    callback: (params: {
-      producerId: string;
-      id: string;
-      kind: mediasoup.types.MediaKind;
-      rtpParameters: mediasoup.types.RtpParameters;
-      type: ConsumerType;
-      producerPaused: boolean;
-    }) => void
-  ) => Promise<void>;
-  resume: (callback: () => void) => void;
-  move: (data: Vector4, callback: () => void) => void;
-}
-
-export interface InterServerEvents {
-  ping: () => void;
-}
-
-export interface SocketData {
-  pocketbaseUserId: string;
-  pocketbaseProfileId: string;
-  name: string;
-  age: number;
-}
 
 const httpServer = http.createServer(app);
 await new Promise<void>((resolve, reject) => {
@@ -112,7 +35,7 @@ await new Promise<void>((resolve, reject) => {
 });
 console.log(`server running on http://${local}:1337`)
 
-const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(httpServer, {
+const io = new Server(httpServer, {
   cors: {
     origin: `*`,
     methods: ['GET', 'POST'],
