@@ -22,7 +22,7 @@ export function updateWheelLoop(serial: SerialPort, vector: Vector4) {
             } catch (err) {
                 console.error(err);
             }
-        }, 2);
+        }, 20);
     }
 
 }
