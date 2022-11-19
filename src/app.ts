@@ -1,10 +1,13 @@
+import { ReadlineParser, SerialPort } from "serialport";
+
 import { Server } from "socket.io"
-import { Worker } from 'worker_threads';
+// import { Worker } from 'worker_threads';
 import dotenv from "dotenv"
 import express from "express";
 import http from "http"
 import os from "os";
 import path from "path"
+import { sendCommand } from "wheels/updateWheelLoop";
 import { wait } from './helpers/wait';
 
 export const __dirname = path.resolve();
@@ -43,13 +46,31 @@ const io = new Server(httpServer, {
   },
 })
 
+let port: SerialPort
 
+try {
+  port = new SerialPort({
+    path: "/dev/ttyACM0",
+    baudRate: 115200,
+    dataBits: 8,
+    parity: "none",
+  });
+  const parser = new ReadlineParser();
+  port.pipe(parser);
+  parser.on("data", console.log);
+  // port.write("HELLO")
+  port.on("error", (err) => {
+    console.error(err);
+  });
+} catch (error) {
+  console.error(error);
+}
 
-const wheelWorker = new Worker('./dist/wheelWorker.js');
+// const wheelWorker = new Worker('./dist/wheelWorker.js');
 
-wheelWorker.postMessage([2, 2, -2, -2])
-await wait(3000)
-wheelWorker.postMessage([0, 0, 0, 0])
+// wheelWorker.postMessage([2, 2, -2, -2])
+// await wait(3000)
+// wheelWorker.postMessage([0, 0, 0, 0])
 
 
 io.sockets.on("connection", (socket) => {
@@ -59,11 +80,11 @@ io.sockets.on("connection", (socket) => {
   })
   socket.on("move", async (data, callback) => {
     console.log("move data", data)
-    wheelWorker.postMessage(data)
+    sendCommand(port, data)
     callback()
   })
   socket.on("disconnect", () => {
-    wheelWorker.postMessage([0, 0, 0, 0])
+    sendCommand(port, [0, 0, 0, 0])
   })
 })
 
