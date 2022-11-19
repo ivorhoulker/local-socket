@@ -44,15 +44,11 @@ const io = new Server(httpServer, {
   },
 })
 
-io.sockets.on("connection", (socket) => {
-  console.log("socket connected", socket.id)
-  socket.on("handshake", (callback) => {
-    callback("hi from the server")
-  })
-  socket.on("move", (data, callback) => {
-    callback("test successful")
-  })
-})
+
+
+
+
+let port: SerialPort
 
 try {
   const port = new SerialPort({ path: '/dev/ttyACM0', baudRate: 115200, dataBits: 8, parity: "none" })
@@ -73,7 +69,20 @@ try {
   console.error(error)
 }
 
-
+io.sockets.on("connection", (socket) => {
+  console.log("socket connected", socket.id)
+  socket.on("handshake", (callback) => {
+    callback("hi from the server")
+  })
+  socket.on("move", (data, callback) => {
+    console.log("move data", data)
+    if (port) updateWheelLoop(port, data);
+    callback()
+  })
+  socket.on("disconnect", () => {
+    if (port) updateWheelLoop(port, [0, 0, 0, 0]);
+  })
+})
 
 function getLocalIp() {
   let localIp = "127.0.0.1";
