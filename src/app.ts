@@ -11,7 +11,7 @@ console.log({ local })
 dotenv.config({ path: path.resolve(__dirname, '.env') })
 const app = express();
 app.get("/", (req, res) => {
-  res.send(`Hello from Ivor's app! This shows it exists. ${JSON.stringify(req || "{}")}`);
+  res.send(`Hello from Ivor's app! This shows it exists.`);
 });
 
 const httpServer = http.createServer(app);
