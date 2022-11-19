@@ -22,7 +22,7 @@ export async function updateWheelLoop(serial: SerialPort, vector: Vector4) {
             }
         }, 2);
     }
-    if (wheelLoop) {
+    if (zero && wheelLoop) {
         clearInterval(wheelLoop);
     }
 }
