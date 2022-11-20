@@ -4,24 +4,27 @@ import { Server } from "socket.io"
 // import { Worker } from 'worker_threads';
 import dotenv from "dotenv"
 import express from "express";
-import { getLocalIp } from "./getLocalIp";
+import { getLocalIp } from "./helpers/getLocalIp";
 import http from "http"
 import path from "path"
-import { sendCommand } from "./wheels/updateWheelLoop";
-import { wait } from './helpers/wait';
+import { sendWheelCommand } from "./wheels/sendWheelCommand";
 
-export const __dirname = path.resolve();
+export const __dirname = path.resolve(); // for if __dirname is not present
+dotenv.config({ path: path.resolve(__dirname, '.env') }) // ensure .env variables are loaded from the correct place
+
 let local = getLocalIp();
-console.log({ local })
+let port: SerialPort
+let httpServer: http.Server
 
-dotenv.config({ path: path.resolve(__dirname, '.env') })
+
 const app = express();
 app.get("/", (req, res) => {
-  res.send(`Hello from Ivor's app! This shows it exists.`);
+  res.send(`Hello from the node app on the raspberry pi at ${local}! This shows it exists.`);
 });
-let port: SerialPort
 
-let httpServer: http.Server
+
+
+/** Start the server, the socket, and listeners. */
 async function startServer() {
   httpServer = http.createServer(app);
   await new Promise<void>((resolve, reject) => {
@@ -36,14 +39,14 @@ async function startServer() {
       reject(error)
     }
   });
+
   console.log(`server running on http://${local}:1337`)
+
   const io = new Server(httpServer, {
     cors: {
       origin: `*`,
       methods: ['GET', 'POST'],
       credentials: false,
-      // allowedHeaders: ["source"],
-
     },
   })
   io.sockets.on("connection", (socket) => {
@@ -53,12 +56,12 @@ async function startServer() {
     })
     socket.on("move", async (data, callback) => {
       console.log("move data", data)
-      sendCommand(port, data)
+      sendWheelCommand(port, data)
       callback()
     })
     socket.on("disconnect", (reason) => {
       console.warn("disconnected", reason)
-      sendCommand(port, [0, 0, 0, 0])
+      sendWheelCommand(port, [0, 0, 0, 0])
       if (reason === "transport close") {
         //the network status probably changed
         console.warn("network interrupted?")
@@ -70,11 +73,6 @@ async function startServer() {
 
 }
 await startServer()
-
-
-
-
-
 
 try {
   port = new SerialPort({
@@ -94,26 +92,17 @@ try {
   console.error(error);
 }
 
-// const wheelWorker = new Worker('./dist/wheelWorker.js');
 
-// wheelWorker.postMessage([2, 2, -2, -2])
-// await wait(3000)
-// wheelWorker.postMessage([0, 0, 0, 0])
-
-
-
-
-
-const ipCheckLoop = setInterval(() => {
+//check every second whether the ip has changed, and if so, restart the server
+setInterval(() => {
   try {
     const newIp = getLocalIp()
     if (local !== newIp) {
-      //ip change here
+      //ip has changed
       console.log("NEW LOCAL IP ADDRESS: ", newIp)
       local = newIp
       httpServer?.close()
-      if (newIp !== "127.0.0.1") startServer()
-
+      if (newIp !== "127.0.0.1") startServer() // 127.0.0.1 would mean no connections can be made, so no point starting
     }
   } catch (err) {
     console.error(err);
