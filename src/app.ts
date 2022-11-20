@@ -62,7 +62,7 @@ async function startServer() {
       if (reason === "transport close") {
         //the network status probably changed
         console.warn("network interrupted?")
-        httpServer.close()
+        httpServer?.close()
         startServer()
       }
     })
@@ -111,7 +111,7 @@ const ipCheckLoop = setInterval(() => {
       //ip change here
       console.log("NEW LOCAL IP ADDRESS: ", newIp)
       local = newIp
-      httpServer.close()
+      httpServer?.close()
       startServer()
 
     }
