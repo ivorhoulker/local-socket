@@ -8,6 +8,47 @@ The default local ip of the pi seems to be `172.20.10.2` and the iphone is `172.
 
 T
 
+# PM2 Setup
+
+On a fresh pi, run `pm2 ecosystem` to generate a config file, edit and delete the contents, replace it with:
+
+```
+module.exports = {
+  apps: [
+    {
+      name: "socket",
+      cwd: "./app/socket",
+      script: "yarn",
+      args: "start",
+    },
+  ],
+};
+
+```
+
+Then
+
+```
+mkdir app
+cd app
+git clone #this repo into a folder called socket
+cd socket
+yarn
+yarn build-ts
+
+pm2 kill # stop any old processes
+pm2 start
+pm2 save
+pm2 log  #to check it works
+```
+
+Make sure to delete any yarn files in the directories above. The current pis have a yarn workspace active in the root! This was a bad idea. Sorry.
+ls -a to see hidden files. Delete .yarnrc and .yarnrc.yml or any other yarn-like stuff.
+
+Node incompatible error? Might need to change node version. E.g. `nvm install 16`.
+
+No yarn? `npm i -g yarn`
+
 ## Updating many cars at once
 
 Download [angry ip scanner](https://angryip.org/) and save yourself from having to listen to/find the local IPs of the cars manually. Use it to scan and identify all the cars - their host names are Greek heroes (Hector, Achilles, Prometheus, Theseus and Jason so far).
@@ -41,6 +82,11 @@ pm2 restart car # if pm2 is not running already, see below for installing from s
 ```
 
 # Installing from scratch
+
+You need a way to connect to the iphone hotspot: (https://support.speedify.com/article/565-tethered-iphone-linux)[https://support.speedify.com/article/565-tethered-iphone-linux]
+
+Basically run: `sudo apt install usbmuxd`
+You'll have to 'trust' the computer and put your passcode in on the phone.
 
 `pm2` is used to run the process on start up, for reliable restarts and easy log acccess. To set it up manually:
 
