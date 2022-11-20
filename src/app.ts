@@ -23,7 +23,7 @@ let port: SerialPort
 
 let httpServer: http.Server
 async function startServer() {
-  const httpServer = http.createServer(app);
+  httpServer = http.createServer(app);
   await new Promise<void>((resolve, reject) => {
     try {
       httpServer.listen(
