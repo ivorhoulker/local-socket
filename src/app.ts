@@ -4,14 +4,14 @@ import { Server } from "socket.io"
 // import { Worker } from 'worker_threads';
 import dotenv from "dotenv"
 import express from "express";
+import { getLocalIp } from "./getLocalIp";
 import http from "http"
-import os from "os";
 import path from "path"
 import { sendCommand } from "./wheels/updateWheelLoop";
 import { wait } from './helpers/wait';
 
 export const __dirname = path.resolve();
-const local = getLocalIp();
+let local = getLocalIp();
 console.log({ local })
 
 dotenv.config({ path: path.resolve(__dirname, '.env') })
@@ -26,7 +26,7 @@ await new Promise<void>((resolve, reject) => {
   try {
     httpServer.listen(
       1337,
-      local,
+      "0.0.0.0",
       resolve
     );
   }
@@ -45,6 +45,7 @@ const io = new Server(httpServer, {
 
   },
 })
+
 
 let port: SerialPort
 
@@ -83,24 +84,27 @@ io.sockets.on("connection", (socket) => {
     sendCommand(port, data)
     callback()
   })
-  socket.on("disconnect", () => {
+  socket.on("disconnect", (reason) => {
+    console.warn("disconnected", reason)
     sendCommand(port, [0, 0, 0, 0])
+    if (reason === "transport close") {
+      //the network status probably changed
+      console.warn("network interrupted?")
+    }
   })
 })
 
-function getLocalIp() {
-  let localIp = "127.0.0.1";
-  const interfaces = os.networkInterfaces();
-  Object.keys(interfaces).forEach((interfaceName) => {
-    for (const iface of interfaces[interfaceName] ?? []) {
-      // Ignore IPv6 and 127.0.0.1
-      if (iface.family !== "IPv4" || iface.internal !== false) {
-        continue;
-      }
-      // Set the local ip to the first IPv4 address found and exit the loop
-      localIp = iface.address;
-      return;
+
+
+const ipCheckLoop = setInterval(() => {
+  try {
+    const newIp = getLocalIp()
+    if (local !== newIp) {
+      //ip change here
+      console.log("NEW LOCAL IP ADDRESS: ", newIp)
+      local = newIp
     }
-  });
-  return localIp;
-}
+  } catch (err) {
+    console.error(err);
+  }
+}, 1000);
