@@ -19,35 +19,62 @@ const app = express();
 app.get("/", (req, res) => {
   res.send(`Hello from Ivor's app! This shows it exists.`);
 });
-
-
-const httpServer = http.createServer(app);
-await new Promise<void>((resolve, reject) => {
-  try {
-    httpServer.listen(
-      1337,
-      "0.0.0.0",
-      resolve
-    );
-  }
-  catch (error) {
-    reject(error)
-  }
-});
-console.log(`server running on http://${local}:1337`)
-
-const io = new Server(httpServer, {
-  cors: {
-    origin: `*`,
-    methods: ['GET', 'POST'],
-    credentials: false,
-    // allowedHeaders: ["source"],
-
-  },
-})
-
-
 let port: SerialPort
+
+let httpServer: http.Server
+async function startServer() {
+  const httpServer = http.createServer(app);
+  await new Promise<void>((resolve, reject) => {
+    try {
+      httpServer.listen(
+        1337,
+        local,
+        resolve
+      );
+    }
+    catch (error) {
+      reject(error)
+    }
+  });
+  console.log(`server running on http://${local}:1337`)
+  const io = new Server(httpServer, {
+    cors: {
+      origin: `*`,
+      methods: ['GET', 'POST'],
+      credentials: false,
+      // allowedHeaders: ["source"],
+
+    },
+  })
+  io.sockets.on("connection", (socket) => {
+    console.log("socket connected", socket.id)
+    socket.on("handshake", (callback) => {
+      callback("hi from the server")
+    })
+    socket.on("move", async (data, callback) => {
+      console.log("move data", data)
+      sendCommand(port, data)
+      callback()
+    })
+    socket.on("disconnect", (reason) => {
+      console.warn("disconnected", reason)
+      sendCommand(port, [0, 0, 0, 0])
+      if (reason === "transport close") {
+        //the network status probably changed
+        console.warn("network interrupted?")
+        httpServer.close()
+        startServer()
+      }
+    })
+  })
+
+}
+await startServer()
+
+
+
+
+
 
 try {
   port = new SerialPort({
@@ -74,25 +101,6 @@ try {
 // wheelWorker.postMessage([0, 0, 0, 0])
 
 
-io.sockets.on("connection", (socket) => {
-  console.log("socket connected", socket.id)
-  socket.on("handshake", (callback) => {
-    callback("hi from the server")
-  })
-  socket.on("move", async (data, callback) => {
-    console.log("move data", data)
-    sendCommand(port, data)
-    callback()
-  })
-  socket.on("disconnect", (reason) => {
-    console.warn("disconnected", reason)
-    sendCommand(port, [0, 0, 0, 0])
-    if (reason === "transport close") {
-      //the network status probably changed
-      console.warn("network interrupted?")
-    }
-  })
-})
 
 
 
@@ -103,6 +111,9 @@ const ipCheckLoop = setInterval(() => {
       //ip change here
       console.log("NEW LOCAL IP ADDRESS: ", newIp)
       local = newIp
+      httpServer.close()
+      startServer()
+
     }
   } catch (err) {
     console.error(err);
