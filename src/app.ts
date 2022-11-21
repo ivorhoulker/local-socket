@@ -22,8 +22,6 @@ app.get("/", (req, res) => {
   res.send(`Hello from the node app on the raspberry pi at ${local}! This shows it exists.`);
 });
 
-
-
 /** Start the server, the socket, and listeners. */
 async function startServer() {
   httpServer = http.createServer(app);
@@ -48,6 +46,8 @@ async function startServer() {
       methods: ['GET', 'POST'],
       credentials: false,
     },
+    pingInterval: 1000,
+    pingTimeout: 1500
   })
   io.sockets.on("connection", (socket) => {
     console.log("socket connected", socket.id)
