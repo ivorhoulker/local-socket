@@ -96,11 +96,12 @@ async function startSerialPort() {
       startSerialPort()
     });
   } catch (error) {
-    console.error(error, " while connecting. Closing and retrying.");
-    if (port) port.close()
-    port = null
-    await wait(500) // wait half a second before retrying serial port connection on connection error
-    startSerialPort()
+    console.warn(error)
+    // console.error(error, " while connecting. Closing and retrying.");
+    // if (port) port.close()
+    // port = null
+    // await wait(500) // wait half a second before retrying serial port connection on connection error
+    // startSerialPort()
   }
 }
 
