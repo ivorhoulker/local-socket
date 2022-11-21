@@ -8,6 +8,7 @@ import { getLocalIp } from "./helpers/getLocalIp";
 import http from "http"
 import path from "path"
 import { sendWheelCommand } from "./wheels/sendWheelCommand";
+import { wait } from "@rphk/constants";
 
 export const __dirname = path.resolve(); // for if __dirname is not present
 dotenv.config({ path: path.resolve(__dirname, '.env') }) // ensure .env variables are loaded from the correct place
@@ -25,7 +26,7 @@ app.get("/", (req, res) => {
 /** Start the server, the socket, and listeners. */
 async function startServer() {
   httpServer = http.createServer(app);
-  await new Promise<void>((resolve, reject) => {
+  const error = await new Promise<void | Error>((resolve, reject) => {
     try {
       httpServer.listen(
         1337,
@@ -37,6 +38,7 @@ async function startServer() {
       reject(error)
     }
   });
+  if (error instanceof Error) console.error(error)
 
   console.log(`server running on http://${local}:1337`)
 
@@ -46,13 +48,13 @@ async function startServer() {
       methods: ['GET', 'POST'],
       credentials: false,
     },
-    pingInterval: 1000,
-    pingTimeout: 1500
+    pingInterval: 250, //trying a really short ping interval to speed up the car's auto stop in case of phone connection issue
+    pingTimeout: 501 // ditto
   })
   io.sockets.on("connection", (socket) => {
     console.log("socket connected", socket.id)
     socket.on("handshake", (callback) => {
-      callback("hi from the server")
+      callback(`Connected to local socket server on ${local}:1337`)
     })
     socket.on("move", async (data, callback) => {
       console.log("move data", data)
@@ -65,8 +67,6 @@ async function startServer() {
       if (reason === "transport close") {
         //the network status probably changed
         console.warn("network interrupted?")
-        // httpServer?.close()
-        // startServer()
       }
     })
   })
@@ -74,26 +74,37 @@ async function startServer() {
 }
 await startServer()
 
-try {
-  port = new SerialPort({
-    path: "/dev/ttyACM0",
-    baudRate: 115200,
-    dataBits: 8,
-    parity: "none",
-  });
-  const parser = new ReadlineParser();
-  port.pipe(parser);
-  parser.on("data", console.log);
-  // port.write("HELLO")
-  port.on("error", (err) => {
-    console.error(err);
-  });
-} catch (error) {
-  console.error(error);
+async function startSerialPort() {
+  try {
+    port = new SerialPort({
+      path: "/dev/ttyACM0",
+      baudRate: 115200,
+      dataBits: 8,
+      parity: "none",
+    });
+    const parser = new ReadlineParser();
+    port.pipe(parser);
+    parser.on("data", console.log); //this will log any data received from the port, assuming it can be parsed with the ReadlineParser
+    // port.write("HELLO") // you could write any arbitrary data to the port in this way
+    port.on("error", async (error) => {
+      console.error(error);
+      port = null
+      await wait(500) // wait half a second before retrying serial port connection on port error
+      startSerialPort()
+    });
+  } catch (error) {
+    console.error(error);
+    port = null
+    await wait(500) // wait half a second before retrying serial port connection on connection error
+    startSerialPort()
+  }
 }
 
+await startSerialPort()
 
-//check every second whether the ip has changed, and if so, restart the server
+
+
+/** check every second whether the ip has changed, and if so, restart the server */
 setInterval(() => {
   try {
     const newIp = getLocalIp()
@@ -102,9 +113,10 @@ setInterval(() => {
       console.log("NEW LOCAL IP ADDRESS: ", newIp)
       local = newIp
       httpServer?.close()
+      if (port) sendWheelCommand(port, [0, 0, 0, 0])
       if (newIp !== "127.0.0.1") startServer() // 127.0.0.1 would mean no connections can be made, so no point starting
     }
   } catch (err) {
     console.error(err);
   }
-}, 1000);
+}, 500); // the frequency to check the ip, 500 = every half a second
