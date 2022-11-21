@@ -15,7 +15,7 @@ When the car receives a 'move' command via the server, it sends a wheel command 
 
 You could still add new commands to send over serial, and trigger them manually (e.g. on start up) to test, and decide what data they need, before asking Ivor to add them to the server/frontend and `@rphk/constants`, so that you can add a listener for that event to trigger the command.
 
-For example, I want to add a tilt command. I write a `sendTiltCommand` function. It needs to know whether to tilt upward or downward, and what speed to tilt. So I decide I will need a number between -5 and 5 as the data. Positive tilts up, negative tilts down. The higher the number, the faster. I call my function with hardcoded parameters, just after the socket connects, to confirm it works. I tell Ivor to add this functionality to the project. He updates `@rphk/constants`. Then I run `yarn install @rphk/constants@latest` and now the socket knows about this event. I can write my
+For example, I want to add a tilt command. I write a `sendTiltCommand` function. It needs to know whether to tilt upward or downward, and what speed to tilt. So I decide I will need a number between -5 and 5 as the data. Positive tilts up, negative tilts down. The higher the number, the faster. I call my function with hardcoded parameters, just after the socket connects, to confirm it works. I tell Ivor to add this functionality to the project. He updates `@rphk/constants`. Then I run `yarn add @rphk/constants@latest` and now the socket knows about this event. I can write my
 
 ```javascript
 socket.on("tilt", (data, callback) => {
