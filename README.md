@@ -59,6 +59,7 @@ Our process can run with node 16, among others. Let's install that:
 
 ```bash
 nvm install 16
+nvm alias default 16 # make sure it's now the default on start up
 ```
 
 This installs version 16 and sets it as the active version.

@@ -81,19 +81,23 @@ async function startSerialPort() {
       baudRate: 115200,
       dataBits: 8,
       parity: "none",
+      endOnClose: true
     });
+
     const parser = new ReadlineParser();
     port.pipe(parser);
     parser.on("data", console.log); //this will log any data received from the port, assuming it can be parsed with the ReadlineParser
     // port.write("HELLO") // you could write any arbitrary data to the port in this way
     port.on("error", async (error) => {
-      console.error(error);
+      console.error(error, "Closing and retrying.");
+      if (port) port.close()
       port = null
       await wait(500) // wait half a second before retrying serial port connection on port error
       startSerialPort()
     });
   } catch (error) {
-    console.error(error);
+    console.error(error, " while connecting. Closing and retrying.");
+    if (port) port.close()
     port = null
     await wait(500) // wait half a second before retrying serial port connection on connection error
     startSerialPort()
