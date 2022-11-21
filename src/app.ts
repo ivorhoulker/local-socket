@@ -90,7 +90,7 @@ async function startSerialPort() {
     // port.write("HELLO") // you could write any arbitrary data to the port in this way
     port.on("error", async (error) => {
       console.error(error, "Closing and retrying.");
-      if (port) port.close()
+      if (port?.isOpen) port.close()
       port = null
       await wait(500) // wait half a second before retrying serial port connection on port error
       startSerialPort()
