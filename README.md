@@ -2,6 +2,30 @@
 
 > A local socket process to run on cars/robots to receive controls from a phone running the Presence app.
 
+The code is written in typescript, and transpiled to javascript (a `dist` directory is created on build). The typescript definitions and constants come from a package published from a separate monorepo, `@rphk/constants`, which is installed like any regular npm package. To expand functionality, you will want to look at the socket listeners and emitters in `app.ts`.
+
+```javascript
+socket.on("move", (data, callback) => {
+  sendWheelCommand(port, data);
+  callback();
+});
+```
+
+When the car receives a 'move' command via the server, it sends a wheel command to the serial port (via `sendWheelCommand`) - data is an array of four numbers. You can see the type of `data` by hovering over it. The events on the socket are typed, so if you wanted to add a new event, let's say, "tilt", you would also need the `@rphk/constants` package server type to be updated to specify that event and the data it takes.
+
+You could still add new commands to send over serial, and trigger them manually (e.g. on start up) to test, and decide what data they need, before asking Ivor to add them to the server/frontend and `@rphk/constants`, so that you can add a listener for that event to trigger the command.
+
+For example, I want to add a tilt command. I write a `sendTiltCommand` function. It needs to know whether to tilt upward or downward, and what speed to tilt. So I decide I will need a number between -5 and 5 as the data. Positive tilts up, negative tilts down. The higher the number, the faster. I call my function with hardcoded parameters, just after the socket connects, to confirm it works. I tell Ivor to add this functionality to the project. He updates `@rphk/constants`. Then I run `yarn install @rphk/constants@latest` and now the socket knows about this event. I can write my
+
+```javascript
+socket.on("tilt", (data, callback) => {
+  sendTiltCommand(port, data);
+  callback();
+});
+```
+
+and the compiler will be happy.
+
 # Installation
 
 ## Installing from scratch
