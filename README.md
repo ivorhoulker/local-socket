@@ -39,7 +39,7 @@ nvm install 16
 
 This installs version 16 and sets it as the active version.
 
-I like using yarn, and my projects usually have yarn.lock files. It's the same as npm really.
+I like using yarn, and my projects usually have yarn.lock files. Here, it is assumed you will use yarn to run everything.
 
 ```
 npm i -g yarn
@@ -59,7 +59,7 @@ Run `pm2 ecosystem` to generate a config file. Open it with vim or nano:
 nano pm2.config.js # or whatever file it said it created, make sure you're in the right directory.
 ```
 
-Set the contents as follows,:
+Set the contents as follows:
 
 ```
 module.exports = {
