@@ -34,7 +34,7 @@ To connect the pi to an iphone via usb hotspot local network, you need `usbmuxd`
 
 On a pi, run:
 
-```
+```bash
 sudo apt install usbmuxd
 ```
 
@@ -44,20 +44,20 @@ You'll have to 'trust' the computer and put your passcode in on the phone.
 You'll need node and npm (node package manager). It's best to use nvm (node version manager) for easy switching between versions.
 Check it's installed:
 
-```
+```bash
 nvm -v
 ```
 
 It should show a version number.
 If not, install it:
 
-```
+```bash
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.39.2/install.sh | bash
 ```
 
 Our process can run with node 16, among others. Let's install that:
 
-```
+```bash
 nvm install 16
 ```
 
@@ -65,7 +65,7 @@ This installs version 16 and sets it as the active version.
 
 I like using yarn, and my projects usually have yarn.lock files. Here, it is assumed you will use yarn to run everything.
 
-```
+```bash
 npm i -g yarn
 ```
 
@@ -73,19 +73,19 @@ npm i -g yarn
 
 `pm2` is used to run the process on start up, for reliable restarts and easy log access. To set it up manually:
 
-```
+```bash
 npm install -g pm2
 ```
 
 Run `pm2 ecosystem` to generate a config file. Open it with vim or nano:
 
-```
+```bash
 nano pm2.config.js # or whatever file it said it created, make sure you're in the right directory.
 ```
 
 Set the contents as follows:
 
-```
+```bash
 module.exports = {
   apps: [
     {
@@ -102,7 +102,7 @@ module.exports = {
 Save and exit.
 Then:
 
-```
+```bash
 mkdir app
 cd app
 git clone https://github.com/ivorhoulker/local-socket.git socket
@@ -133,7 +133,7 @@ Can't connect to the socket? Check if the board is on the right ip. The default 
 
 Ssh into the pi and pull from the git repo, build, then restart the pm2 process:
 
-```
+```bash
 cd app/socket
 git pull
 yarn
