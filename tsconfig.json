@@ -11,5 +11,6 @@
     "outDir": "dist",
     "baseUrl": "src"
   },
-  "include": ["**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules", "dist", ".vscode"]
 }

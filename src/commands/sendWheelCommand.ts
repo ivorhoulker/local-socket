@@ -7,6 +7,6 @@ export function sendWheelCommand(serial: SerialPort, wheelSpeeds: Quartet) {
     if (serial?.writable) {
         serial.write(cmd);
     } else {
-        console.log("serial is unwritable", serial);
+        throw new Error("Serial is not writable, arduino may be disconnected")
     }
 }
