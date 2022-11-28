@@ -1,7 +1,8 @@
-import { ClientToServerEvents, InterServerEvents, ServerToClientEvents, SocketData, wait } from '@rphk/constants';
+import { ClientToServerEvents, InterServerEvents, ServerToClientEvents, wait } from '@rphk/constants';
 import { ReadlineParser, SerialPort } from 'serialport';
 
 import { Server } from 'socket.io';
+import { SocketData } from './types/SocketData';
 // import { Worker } from 'worker_threads';
 import dotenv from 'dotenv';
 import express from 'express';
@@ -19,6 +20,7 @@ const hostname = os.hostname();
 let localIp = getLocalIp();
 let port: SerialPort;
 let httpServer: http.Server;
+let io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
 
 const app = express();
 app.get('/', (req, res) => {
@@ -39,7 +41,7 @@ async function startServer() {
 
   console.log(`server running on http://${localIp}:1337 - host: ${hostname}`);
 
-  const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(httpServer, {
+  io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(httpServer, {
     cors: {
       origin: `*`,
       methods: ['GET', 'POST'],
@@ -95,7 +97,13 @@ async function startSerialPort() {
 
     const parser = new ReadlineParser();
     port.pipe(parser);
-    parser.on('data', console.log); //this will log any data received from the port, assuming it can be parsed with the ReadlineParser
+    parser.on('data', (data) => {
+      if (io) {
+        io.sockets.emit('signal', { signal: 'serial', data, hostname }, (res) => {
+          console.log(res);
+        });
+      }
+    }); //this will log any data received from the port, assuming it can be parsed with the ReadlineParser
     // port.write("HELLO") // you could write any arbitrary data to the port in this way
     port.on('error', async (error) => {
       console.error(error, 'Closing and retrying.');
@@ -108,6 +116,15 @@ async function startSerialPort() {
     });
     port.on('end', async () => {
       console.error('Port just ended. Trying again.');
+      if (io) {
+        io.sockets.emit(
+          'signal',
+          { signal: 'serial', data: `Serial connection interrupted, retrying...`, hostname },
+          (res) => {
+            console.log(res);
+          },
+        );
+      }
       port = null;
       await wait(500); // wait half a second before retrying serial port connection on port error
       startSerialPort();
