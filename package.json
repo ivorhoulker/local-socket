@@ -14,7 +14,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@rphk/constants": "^1.1.2",
+    "@rphk/constants": "^1.1.3",
     "dotenv": "^16.0.3",
     "express": "^4.17.1",
     "serialport": "^10.5.0",
@@ -27,6 +27,7 @@
     "@typescript-eslint/parser": "^5.42.0",
     "concurrently": "^7.5.0",
     "eslint": "^8.26.0",
+    "mediasoup": "^3.11.3",
     "mediasoup-client": "^3.6.60",
     "nodemon": "^2.0.20",
     "prettier": "^2.8.0",

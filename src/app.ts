@@ -15,28 +15,29 @@ import { sendWheelCommand } from './commands/sendWheelCommand';
 export const __dirname = path.resolve(); // for if __dirname is not present
 dotenv.config({ path: path.resolve(__dirname, '.env') }); // ensure .env variables are loaded from the correct place
 const hostname = os.hostname();
-let local = getLocalIp();
+
+let localIp = getLocalIp();
 let port: SerialPort;
 let httpServer: http.Server;
 
 const app = express();
 app.get('/', (req, res) => {
-  res.send(`Hello from the node app on the raspberry pi at ${local}! This shows it exists.`);
+  res.send(`Hello from the node app on the raspberry pi at ${localIp}! This shows it exists.`);
 });
 
 /** Start the server, the socket, and listeners. */
 async function startServer() {
   httpServer = http.createServer(app);
-  const error = await new Promise<void | Error>((resolve, reject) => {
+  const serverStart = await new Promise<void | Error>((resolve, reject) => {
     try {
-      httpServer.listen(1337, local, resolve);
+      httpServer.listen(1337, localIp, resolve);
     } catch (error) {
       reject(error);
     }
   });
-  if (error instanceof Error) console.error(error);
+  if (serverStart instanceof Error) console.error(serverStart);
 
-  console.log(`server running on http://${local}:1337 - host: ${hostname}`);
+  console.log(`server running on http://${localIp}:1337 - host: ${hostname}`);
 
   const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(httpServer, {
     cors: {
@@ -50,7 +51,7 @@ async function startServer() {
   io.sockets.on('connection', (socket) => {
     console.log('socket connected', socket.id);
     socket.on('handshake', (callback) => {
-      callback(`Connected to local socket server on ${local}:1337`);
+      callback(`Connected to ${hostname}, local socket server on ${localIp}:1337`);
     });
     socket.on('command', async (data, callback) => {
       try {
@@ -121,10 +122,10 @@ await startSerialPort();
 setInterval(() => {
   try {
     const newIp = getLocalIp();
-    if (local !== newIp) {
+    if (localIp !== newIp) {
       //ip has changed
       console.log('NEW LOCAL IP ADDRESS: ', newIp);
-      local = newIp;
+      localIp = newIp;
       httpServer?.close();
       if (port) sendWheelCommand(port, [0, 0, 0, 0]);
       if (newIp !== '127.0.0.1') startServer(); // 127.0.0.1 would mean no connections can be made, so no point starting
