@@ -99,8 +99,8 @@ async function startSerialPort() {
     port.pipe(parser);
     parser.on('data', (data) => {
       if (io) {
-        io.sockets.emit('signal', { signal: 'serial', data, hostname }, (res) => {
-          console.log(res);
+        io.emit('signal', { signal: 'serial', data, hostname }, (res) => {
+          console.log('sent signal', res);
         });
       }
     }); //this will log any data received from the port, assuming it can be parsed with the ReadlineParser
@@ -117,13 +117,9 @@ async function startSerialPort() {
     port.on('end', async () => {
       console.error('Port just ended. Trying again.');
       if (io) {
-        io.sockets.emit(
-          'signal',
-          { signal: 'serial', data: `Serial connection interrupted, retrying...`, hostname },
-          (res) => {
-            console.log(res);
-          },
-        );
+        io.emit('signal', { signal: 'serial', data: `Serial connection interrupted, retrying...`, hostname }, (res) => {
+          console.log('sent signal', res);
+        });
       }
       port = null;
       await wait(500); // wait half a second before retrying serial port connection on port error
