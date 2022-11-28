@@ -98,7 +98,7 @@ async function startSerialPort() {
     const parser = new ReadlineParser();
     port.pipe(parser);
     parser.on('data', (data) => {
-      if (io) {
+      if (data && io) {
         io.emit('signal', { signal: 'serial', data, hostname }, (res) => {
           console.log('sent signal', res);
         });
