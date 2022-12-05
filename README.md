@@ -1,11 +1,11 @@
-# Local Socket
+# Car Socket Server
 
 > A local socket process to run on cars/robots to receive controls from a phone running the Presence app.
 
 The code is written in typescript, and transpiled to javascript (a `dist` directory is created on build). The typescript definitions and constants come from a package published from a separate monorepo, `@rphk/constants`, which is installed like any regular npm package. To expand functionality, you will want to look at the socket listeners and emitters in `app.ts`.
 
 ```javascript
-socket.on("move", (data, callback) => {
+socket.on('move', (data, callback) => {
   sendWheelCommand(port, data);
   callback();
 });
@@ -18,7 +18,7 @@ You could still add new commands to send over serial, and trigger them manually 
 For example, I want to add a tilt command. I write a `sendTiltCommand` function. It needs to know whether to tilt upward or downward, and what speed to tilt. So I decide I will need a number between -5 and 5 as the data. Positive tilts up, negative tilts down. The higher the number, the faster. I call my function with hardcoded parameters, just after the socket connects, to confirm it works. I tell Ivor to add this functionality to the project. He updates `@rphk/constants`. Then I run `yarn add @rphk/constants@latest` and now the socket knows about this event. I can write my
 
 ```javascript
-socket.on("tilt", (data, callback) => {
+socket.on('tilt', (data, callback) => {
   sendTiltCommand(port, data);
   callback();
 });
