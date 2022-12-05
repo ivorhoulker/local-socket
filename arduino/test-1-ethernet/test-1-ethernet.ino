@@ -1,3 +1,9 @@
+/*
+ * 
+ * Boards manager download : https://github.com/earlephilhower/arduino-pico
+ */
+
+
 #include "config.h"
 #include <Wire.h>
 #include <Ethernet.h>
