@@ -16,7 +16,7 @@ EthernetUDP Udp;
 long currentMillis = 0;
 long previousMillis = 0;
 
-int dd = 0;
+int dd = 101;
 
 //the Arduino's IP
 IPAddress ip(192, 168, 8, dd);
