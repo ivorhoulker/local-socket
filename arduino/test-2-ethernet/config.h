@@ -1,0 +1,4 @@
+/*
+  DEBUG
+*/
+bool debugMode = true;

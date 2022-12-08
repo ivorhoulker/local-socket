@@ -1,4 +1,15 @@
-# Car Socket Server
+# Car OSC Server on Pico
+
+Check the [/arduino] directory for different versions.
+Receives and sends OSC signals over ethernet.
+An osc signal consists of a string address (like `/command/move`) and number/boolean data in an array (like `[225, 100, 10]`).
+
+## Common errors
+
+- Remember to close the serial monitor before updating the code on the pico.
+- Ensure you have the correct version of OSC bundle, it should be installed via .zip file, and it uses version 1.3.5: https://github.com/CNMAT/OSC/releases
+
+# Car Socket Server in Node
 
 > A local socket process to run on cars/robots to receive controls from a phone running the Presence app.
 
