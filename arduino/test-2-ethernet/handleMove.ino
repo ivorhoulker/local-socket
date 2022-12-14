@@ -10,5 +10,5 @@ void handleMove(OSCMessage & msg, int addrOffset) {
   }
   Serial.println();
   //TODO: Handle the move command
-
+  bundleOUT.add("/confirm/move").add(val[0]);
 }

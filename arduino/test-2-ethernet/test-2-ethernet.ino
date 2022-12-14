@@ -1,7 +1,7 @@
 /*
- * Pico board manager download: https://github.com/earlephilhower/arduino-pico
- * OSCBundle library: https://github.com/CNMAT/OSC/releases - version 1.3.5 is used.
- */
+   Pico board manager download: https://github.com/earlephilhower/arduino-pico
+   OSCBundle library: https://github.com/CNMAT/OSC/releases - version 1.3.5 is used.
+*/
 
 
 #include "config.h"
@@ -10,7 +10,7 @@
 #include <EthernetUdp.h>
 
 //This is a hacky way of overwriting the max packet size in EthernetUdp, ignore the errors
-#define UDP_TX_PACKET_MAX_SIZE 860
+//#define UDP_TX_PACKET_MAX_SIZE 860
 #include <SPI.h>
 
 #include <OSCBundle.h>
@@ -23,7 +23,7 @@
 */
 
 EthernetUDP Udp;
-
+OSCBundle bundleOUT;
 
 //the Arduino's IP
 IPAddress ip(192, 168, 8, 101);
@@ -54,6 +54,16 @@ void setup1() {
 void loop() {
   if (isSetupDone) {
     ethernetLoop();
-//    serialLoop();
+    //enabling serial loop increases bundleIN errors significantly
+    //    serialLoop();
   }
 }
+
+//void loop1() {
+//  if (bundleOUT.size()) {
+//    Udp.beginPacket(Udp.remoteIP(), outPort);
+//    bundleOUT.send(Udp);
+//    Udp.endPacket();
+//    bundleOUT.empty();
+//  }
+//}

@@ -13,7 +13,7 @@ void ethernetSetup() {
   Serial.println(inPort);
 }
 
-OSCBundle bundleOUT;
+
 
 void ethernetLoop() {
 
@@ -23,10 +23,7 @@ void ethernetLoop() {
     while (size--) {
       bundleIN.fill(Udp.read());
     }
-
-
     if (!bundleIN.hasError()) {
-
       // handle incoming messages
       bundleIN.route("/move", handleMove);
 
