@@ -13,52 +13,36 @@ void ethernetSetup() {
   Serial.println(inPort);
 }
 
+OSCBundle bundleOUT;
+
 void ethernetLoop() {
-  static int32_t sequenceNumber = 0;
+
   OSCBundle bundleIN;
-  currentMillis = millis();
   int size;
-  if ( (size = Udp.parsePacket()) > 0)
-  {
-    while (size--)
+  if ( (size = Udp.parsePacket()) > 0) {
+    while (size--) {
       bundleIN.fill(Udp.read());
-    if (!bundleIN.hasError())
-    {
-      // handle incoming message
-      bundleIN.route("/command" , handleCommand);
-      Serial.println("GOT BUNDLE");
-
-      // send back confirmation
-      OSCBundle bundleOut;
-      bundleOut.add("/got/command").add(sequenceNumber++);
-      Udp.beginPacket(Udp.remoteIP(), outPort);
-      bundleOut.send(Udp);
-      Udp.endPacket();
-
-
-    } else {
-      if (debugMode) {
-        Serial.println("BUNDLE IN ERROR");
-      }
     }
+
+
+    if (!bundleIN.hasError()) {
+
+      // handle incoming messages
+      bundleIN.route("/move", handleMove);
+
+      //      bundleIN.route("/tilt", handleTilt);
+      //      bundleIN.route("/color", handleColor);
+
+    } else if (debugMode) {
+//      Serial.print("packetBuffer: ");
+//      Serial.println(packetBuffer);
+      Serial.print("bundleIN error code: ");
+      Serial.println(bundleIN.getError());
+    }
+    //    if (bundleOUT.size()) {
+    //      Udp.beginPacket(Udp.remoteIP(), outPort);
+    //      bundleOUT.send(Udp).empty();
+    //      Udp.endPacket();
+    //    }
   }
-
-}
-void handleCommand(OSCMessage & msg, int addrOffset) {
-
-  long val[3];
-  for (int i = 0; i < 3; i++) {
-    if (msg.isInt(i)) {
-      val[i] = msg.getInt(i);
-    }
-    if (val[i] > 255) {
-      val[i] = 255;
-    }
-    if (val[i] < 0) {
-      val[i] = 0;
-    }
-    Serial.print(val[i]);
-    Serial.print("\t");
-  }
-  Serial.println();
 }

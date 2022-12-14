@@ -8,6 +8,9 @@
 #include <Wire.h>
 #include <Ethernet.h>
 #include <EthernetUdp.h>
+
+//This is a hacky way of overwriting the max packet size in EthernetUdp, ignore the errors
+#define UDP_TX_PACKET_MAX_SIZE 860
 #include <SPI.h>
 
 #include <OSCBundle.h>
@@ -20,6 +23,7 @@
 */
 
 EthernetUDP Udp;
+
 
 //the Arduino's IP
 IPAddress ip(192, 168, 8, 101);
@@ -50,6 +54,6 @@ void setup1() {
 void loop() {
   if (isSetupDone) {
     ethernetLoop();
-    serialLoop();
+//    serialLoop();
   }
 }
