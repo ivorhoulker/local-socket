@@ -13,7 +13,7 @@ void ethernetSetup() {
   Serial.println(inPort);
 }
 
-
+char packetBuffer[CUSTOM_PACKET_MAX_SIZE];
 
 void ethernetLoop() {
 
@@ -21,25 +21,19 @@ void ethernetLoop() {
   int size;
   if ( (size = Udp.parsePacket()) > 0) {
     while (size--) {
-      bundleIN.fill(Udp.read());
+      bundleIN.fill(Udp.read(packetBuffer,CUSTOM_PACKET_MAX_SIZE));
     }
     if (!bundleIN.hasError()) {
       // handle incoming messages
       bundleIN.route("/move", handleMove);
-
-      //      bundleIN.route("/tilt", handleTilt);
-      //      bundleIN.route("/color", handleColor);
+      bundleIN.route("/tilt", handleTilt);
+      bundleIN.route("/color", handleColor);
 
     } else if (debugMode) {
-//      Serial.print("packetBuffer: ");
-//      Serial.println(packetBuffer);
       Serial.print("bundleIN error code: ");
       Serial.println(bundleIN.getError());
     }
-    //    if (bundleOUT.size()) {
-    //      Udp.beginPacket(Udp.remoteIP(), outPort);
-    //      bundleOUT.send(Udp).empty();
-    //      Udp.endPacket();
-    //    }
+    
   }
+  for(int i=0;i<UDP_TX_PACKET_MAX_SIZE;i++) packetBuffer[i] = 0;
 }

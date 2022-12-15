@@ -10,7 +10,9 @@
 #include <EthernetUdp.h>
 
 //This is a hacky way of overwriting the max packet size in EthernetUdp, ignore the errors
-//#define UDP_TX_PACKET_MAX_SIZE 860
+//#define UDP_TX_PACKET_MAX_SIZE 24*4
+#define CUSTOM_PACKET_MAX_SIZE 240
+
 #include <SPI.h>
 
 #include <OSCBundle.h>
@@ -54,16 +56,17 @@ void setup1() {
 void loop() {
   if (isSetupDone) {
     ethernetLoop();
+    
     //enabling serial loop increases bundleIN errors significantly
     //    serialLoop();
   }
 }
 
+//char ReplyBuffer[] = "ping"; 
+//
 //void loop1() {
-//  if (bundleOUT.size()) {
-//    Udp.beginPacket(Udp.remoteIP(), outPort);
-//    bundleOUT.send(Udp);
-//    Udp.endPacket();
-//    bundleOUT.empty();
-//  }
+//  Udp.beginPacket(outIp, outPort);
+//  Udp.write(ReplyBuffer);
+//  Udp.endPacket();
+//  delay(100);
 //}

@@ -10,5 +10,5 @@ void handleColor(OSCMessage & msg, int addrOffset) {
   }
   Serial.println();
   //TODO: Handle the color command
-  bundleOUT.add("/confirm/color").add(val[0]);
+  //bundleOUT.add("/confirm/color").add(val[0]);
 }
