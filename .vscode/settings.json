@@ -1,3 +1,9 @@
 {
-  "cSpell.words": ["cssh", "passcode", "replugging", "usbmuxd"]
+  "cSpell.words": [
+    "cssh",
+    "passcode",
+    "replugging",
+    "usbmuxd"
+  ],
+  "cmake.configureOnOpen": true
 }

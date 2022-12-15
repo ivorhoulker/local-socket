@@ -7,9 +7,10 @@
                 "./**",
                 "/Users/ivorhoulker/Documents/Arduino/libraries/**",
                 "/Applications/Arduino.app/Contents/**"
-
             ],
-            "defines": ["USBCON" ],
+            "defines": [
+                "USBCON"
+            ],
             "macFrameworkPath": [
                 "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
             ],
@@ -17,9 +18,8 @@
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "macos-clang-arm64",
-  
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4
-    
 }
