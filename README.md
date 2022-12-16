@@ -1,3 +1,14 @@
+# Car Socket on Pico
+
+Check [/arduino/test-2-socket] - latest version is a websocket server on the pico, that handles sending and receiving json.
+
+## Deps:
+
+```
+khoih-prog/WebSockets2_Generic@^1.13.2
+khoih-prog/EthernetWebServer@^2.3.0
+```
+
 # Car OSC Server on Pico
 
 Check the [/arduino] directory for different versions.
