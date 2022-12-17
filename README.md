@@ -1,8 +1,8 @@
 # Car Socket on Pico
 
-Check [/arduino/test-2-socket] - latest version is a websocket server on the pico, that handles sending and receiving json.
+Check [/arduino/test-2-socket] - latest version is a websocket server on the pico, which handles sending and receiving json.
 
-## Deps:
+## Dependencies:
 
 ```
 khoih-prog/WebSockets2_Generic@^1.13.2
@@ -11,9 +11,11 @@ khoih-prog/EthernetWebServer@^2.3.0
 
 # Car OSC Server on Pico
 
-Check the [/arduino] directory for different versions.
+Check [/arduino/test-2-ethernet].
 Receives and sends OSC signals over ethernet.
 An osc signal consists of a string address (like `/command/move`) and number/boolean data in an array (like `[225, 100, 10]`).
+
+This is probably deprecated in favour of the websocket version, which works on android and is better suited to commands that need to be sure of arrival.
 
 ## Common errors
 

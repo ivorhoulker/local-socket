@@ -40,13 +40,25 @@ StaticJsonDocument<128> jDocRx; // https://arduinojson.org/v6/assistant/#/step1 
 
 // declare functions first
 
-void sendJson(String id, int value)
+void sendError(String clientCallbackId, String command, String errorMessage)
 {
-  StaticJsonDocument<128> jDocTx;
-  jDocTx["id"] = id;
-  jDocTx["val"] = value;
+  StaticJsonDocument<128> response;
+  response["clientCallbackId"] = clientCallbackId;
+  response["command"] = command;
+  response["error"]["message"] = errorMessage;
   char buff[128];
-  size_t len = serializeJson(jDocTx, buff);
+  size_t len = serializeJson(response, buff);
+  client.send(buff, len);
+}
+
+void sendSuccess(String clientCallbackId, String command, int value)
+{
+  StaticJsonDocument<128> response;
+  response["clientCallbackId"] = clientCallbackId;
+  response["command"] = command;
+  response["data"]["value"] = value;
+  char buff[128];
+  size_t len = serializeJson(response, buff);
   client.send(buff, len);
 }
 
@@ -112,22 +124,36 @@ void loop()
     WebsocketsMessage msg = client.readNonBlocking();
     deserializeJson(jDocRx, msg.data()); // Deserialize message data into jDocRx object
 
-    String id = jDocRx["id"]; // The messages contains an id to determine the kind of message and destination
+    String command = jDocRx["command"];  // The message contains a command to determine the command to be handled
+    String clientCallbackId = jDocRx["clientCallbackId"]; // The messages contains an id to determine the kind of message and destination
 
-    if (id)
+    if (command)
     {
-      //can use a generic message with 'ping' id every 2 seconds to keep alive
-      Serial.print("Got message with id: ");
-      Serial.println(id);
+      // client sends "ping" command every 2 seconds to keep alive, but set alive for any command sent anyway
       lastAlive = millis(); // Timestamp the last alive message from client
     }
-    if (id == "test")
+    if (command == "move")
     {
-      sendJson("gotTest", 1);
+      float x = jDocRx["data"]["x"]; // left is -1, right is 1, 0 is no turning
+      float y = jDocRx["data"]["y"]; // fiorward is 1, backward is -1, 0 is no movement
+      //handle car movement
+      Serial.print("x: ");
+      Serial.print(x);
+      Serial.print(", y: ");
+      Serial.println(y);
+      //if success:
+      sendSuccess(clientCallbackId, command, 1);
+      //if there's an error, like the command says forward but sensors say you can't move forward, send an error:
+      //sendError(clientCallbackId, command, "Can't move forward");
+    }
+    if (command == "testError")
+    {
+      sendError(clientCallbackId, command, "Test error");
     }
 
-    Serial.println(msg.data());
-    // return echo
-    client.send(msg.data());
+    if (command != "ping") {
+      Serial.print("Got message: ");
+      Serial.println(msg.data());
+    }
   }
 }
