@@ -38,6 +38,7 @@
 
     #if defined(ARDUINO_RASPBERRY_PI_PICO) 
       #define BOARD_TYPE      "MBED RASPBERRY_PI_PICO"
+      #define BOARD_ID        pico_get_unique_board_id_string
     #elif defined(ARDUINO_ADAFRUIT_FEATHER_RP2040)
       #define BOARD_TYPE      "MBED DAFRUIT_FEATHER_RP2040"
     #elif defined(ARDUINO_GENERIC_RP2040)
