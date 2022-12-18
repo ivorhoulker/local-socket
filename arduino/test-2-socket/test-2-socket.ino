@@ -40,7 +40,7 @@ bool clientConnected = false;
 unsigned long lastAlive = 0; // timestamp of last alive message from client
 
 // JSON
-StaticJsonDocument<128> receivedMessage; // https://arduinojson.org/v6/assistant/#/step1 to determine size
+StaticJsonDocument<192> receivedMessage; // https://arduinojson.org/v6/assistant/#/step1 to determine size
 
 // Handlers
 // TODO: implement the handlers below, and return false if there's an error or condition that prevents them from running
@@ -70,7 +70,7 @@ bool handleColor(int hue, int saturation)
   return true;
 }
 
-bool handleEmoji(String emojiName)
+bool handleEmoji(String emojiName) // emojiName can currently be 'happy' | 'sad' | 'yes' | 'no' 
 {
   // display an emoji on LED Matrix - need to decide what emoji names to implement
   return true;
@@ -133,7 +133,7 @@ void loop()
     clientConnected = true;
     lastAlive = millis();
     // phone is connected here, send a welcome message so the phone knows what vehicle it's attached to
-    StaticJsonDocument<128> message;
+    StaticJsonDocument<192> message;
     message["signal"] = "welcome";
     message["data"]["vehicleId"] = THIS_VEHICLE_ID;
     message["data"]["vehicleType"] = THIS_VEHICLE_TYPE;
@@ -161,9 +161,10 @@ void loop()
     }
 
     // start building unchanging parts of response
-    StaticJsonDocument<128> response;
+    StaticJsonDocument<192> response;
     response["clientCallbackId"] = receivedMessage["clientCallbackId"];
     response["command"] = receivedMessage["command"];
+    response["data"] = receivedMessage["data"];
     String command = receivedMessage["command"];
 
     if (command == "move") {
