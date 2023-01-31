@@ -49,7 +49,7 @@ using namespace websockets2_generic;
 
 // Server
 EthernetWebServer server(80);
-IPAddress serverIP(172,20,10,2);
+IPAddress serverIP(172, 20, 10, 2);
 byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
 };
@@ -70,13 +70,13 @@ StaticJsonDocument<192> receivedMessage;  // https://arduinojson.org/v6/assistan
 // TODO: implement the handlers below, and return false if there's an error or condition that prevents them from running
 // can change bool to int error codes if different types of error need reporting
 
-bool handleMove(float x, float y)  // x is left/right, -1 is left, 1 is right. y is forward/backward - y:1 is forward, y:-1 is backward.
+bool handleMove(int x, int y)  // x is left/right, -1 is left, 1 is right. y is forward/backward - y:1 is forward, y:-1 is backward.
 {
   // commands sent are stateful, so carry on looping last command until another is sent.
   return true;
 }
 
-bool handleTilt(float amount)  // positive is up, negative is down, 0 is stop.
+bool handleTilt(int amount)  // positive is up, negative is down, 0 is stop.
 {
   // commands sent are stateful, so carry on looping last command until another is sent.
   return true;
@@ -87,7 +87,7 @@ bool handleResetTilt() {
   return true;
 }
 
-bool handleColor(int hue, int saturation) {
+bool handleColor(String hue) {
   // set the color of any car LEDs to the hue of the user's avatar
   return true;
 }
@@ -127,7 +127,7 @@ void initEthernet() {
   pinMode(USE_THIS_SS_PIN, OUTPUT);
   digitalWrite(USE_THIS_SS_PIN, HIGH);
   Ethernet.init(USE_THIS_SS_PIN);
-  Ethernet.begin(mac, serverIP);  //, serverGateway, serverSubnet
+  Ethernet.begin(mac);  //, serverGateway, serverSubnet
 }
 
 void initSocketServer() {
@@ -149,7 +149,7 @@ void initSocketServer() {
   Serial.print("IP address: ");
   Serial.print(Ethernet.localIP());
   Serial.print(", Port: ");
-  Serial.println(WEBSOCKETS_PORT);  // Websockets Server Port
+  Serial.println(WEBSOCKETS_PORT);    // Websockets Server Port
   Serial.println(String(HOST_NAME));  // Host name
 
   server.begin();
@@ -177,79 +177,96 @@ void setup() {
   initSocketServer();
 }
 
+void handleCommand(String str) {
+  String cmd = str.substring(0, 1);
+  if (cmd == "M") {
+    int x = (int)str.charAt(1);
+    int y = (int)str.charAt(2);
+    handleMove(x, y);
+    return;
+  } 
+   if (cmd == "C") {
+    String hue = str.substring(1, 4);
+    handleColor(hue);
+    return;
+  } 
+}
+
 void onMessagesCallback(WebsocketsMessage message) {
   lastAlive = millis();
-  StaticJsonDocument<192> response;
-  response["clientCallbackId"] = receivedMessage["clientCallbackId"];
-  response["command"] = receivedMessage["command"];
-  response["data"] = receivedMessage["data"];
-  String command = receivedMessage["command"];
-  deserializeJson(receivedMessage, message.data());
+  handleCommand(message.data())
+  // StaticJsonDocument<192> response;
 
-  if (command == "move") {
-    float x = receivedMessage["data"]["x"];  // left is -1, right is 1, 0 is no turning - not sure whether to normalize vector, could be ints if we don't
-    float y = receivedMessage["data"]["y"];  // forward is 1, backward is -1, 0 is no movement
-    Serial.println("MOVING: x: " + String(x) + ", y: " + String(y));
-    // handle car movement
-    bool success = handleMove(x, y);
-    if (success) {
-      response["data"]["success"] = true;
-    } else {
-      response["error"]["message"] = "Failed to move, something is in the way";
-    }
-  } else if (command == "tilt") {
-    float amount = receivedMessage["data"];  // start tilting up is 1, start tilting down is -1, stop is 0
-    Serial.println("TILTING: " + String(amount));
-    // handle tilt
-    bool success = handleTilt(amount);
-    if (success) {
-      response["data"]["success"] = true;
-    } else {
-      response["error"]["message"] = "Failed to tilt, already at max/min";
-    }
-  } else if (command == "resetTilt") {
-    Serial.println("RESETTING TILT");
-    // handle tilt
-    bool success = handleResetTilt();
-    if (success) {
-      response["data"]["success"] = true;
-    } else {
-      response["error"]["message"] = "Failed to reset tilt";
-    }
-  } else if (command == "color") {
-    int hue = receivedMessage["data"]["hue"];  // data contains hue, saturation and lightness (brightness), but maybe we only need hue and saturation
-    int saturation = receivedMessage["data"]["saturation"];
-    Serial.println("COLOR: hue: " + String(hue) + ", saturation: " + String(saturation));
-    // handle color
-    bool success = handleColor(hue, saturation);
-    if (success) {
-      response["data"]["success"] = true;
-    } else {
-      response["error"]["message"] = "Failed to set color";
-    }
-  } else if (command == "emoji") {
-    String emojiName = receivedMessage["data"]["emojiName"];  // emojiName is a string like "happy", "thumbsUp" etc.
-    Serial.println("EMOJI: " + emojiName);
-    // handle color
-    bool success = handleEmoji(emojiName);
-    if (success) {
-      response["data"]["success"] = true;
-    } else {
-      response["error"]["message"] = "Failed to set emoji";
-    }
-  } else if (command == "testError") {
-    response["error"]["message"] = "This is a test error response";
-  } else if (command == "ping") {
-    // no need to log or respond
-    Serial.println("PING.");
-    client.pong();
-    return;
-  } else {
-    response["error"]["message"] = "This command is not handled by the socket server";
-    Serial.print("Got unhandled message: ");
-    Serial.println(message.data());
-  }
-  sendToClient(response);  // send the response built above
+  // response["clientCallbackId"] = receivedMessage["clientCallbackId"];
+  // response["command"] = receivedMessage["command"];
+  // response["data"] = receivedMessage["data"];
+  // String command = receivedMessage["command"];
+  // deserializeJson(receivedMessage, message.data());
+
+  // if (command == "move") {
+  //   float x = receivedMessage["data"]["x"];  // left is -1, right is 1, 0 is no turning - not sure whether to normalize vector, could be ints if we don't
+  //   float y = receivedMessage["data"]["y"];  // forward is 1, backward is -1, 0 is no movement
+  //   Serial.println("MOVING: x: " + String(x) + ", y: " + String(y));
+  //   // handle car movement
+  //   bool success = handleMove(x, y);
+  //   if (success) {
+  //     response["data"]["success"] = true;
+  //   } else {
+  //     response["error"]["message"] = "Failed to move, something is in the way";
+  //   }
+  // } else if (command == "tilt") {
+  //   float amount = receivedMessage["data"];  // start tilting up is 1, start tilting down is -1, stop is 0
+  //   Serial.println("TILTING: " + String(amount));
+  //   // handle tilt
+  //   bool success = handleTilt(amount);
+  //   if (success) {
+  //     response["data"]["success"] = true;
+  //   } else {
+  //     response["error"]["message"] = "Failed to tilt, already at max/min";
+  //   }
+  // } else if (command == "resetTilt") {
+  //   Serial.println("RESETTING TILT");
+  //   // handle tilt
+  //   bool success = handleResetTilt();
+  //   if (success) {
+  //     response["data"]["success"] = true;
+  //   } else {
+  //     response["error"]["message"] = "Failed to reset tilt";
+  //   }
+  // } else if (command == "color") {
+  //   int hue = receivedMessage["data"]["hue"];  // data contains hue, saturation and lightness (brightness), but maybe we only need hue and saturation
+  //   int saturation = receivedMessage["data"]["saturation"];
+  //   Serial.println("COLOR: hue: " + String(hue) + ", saturation: " + String(saturation));
+  //   // handle color
+  //   bool success = handleColor(hue, saturation);
+  //   if (success) {
+  //     response["data"]["success"] = true;
+  //   } else {
+  //     response["error"]["message"] = "Failed to set color";
+  //   }
+  // } else if (command == "emoji") {
+  //   String emojiName = receivedMessage["data"]["emojiName"];  // emojiName is a string like "happy", "thumbsUp" etc.
+  //   Serial.println("EMOJI: " + emojiName);
+  //   // handle color
+  //   bool success = handleEmoji(emojiName);
+  //   if (success) {
+  //     response["data"]["success"] = true;
+  //   } else {
+  //     response["error"]["message"] = "Failed to set emoji";
+  //   }
+  // } else if (command == "testError") {
+  //   response["error"]["message"] = "This is a test error response";
+  // } else if (command == "ping") {
+  //   // no need to log or respond
+  //   Serial.println("PING.");
+  //   client.pong();
+  //   return;
+  // } else {
+  //   response["error"]["message"] = "This command is not handled by the socket server";
+  //   Serial.print("Got unhandled message: ");
+  //   Serial.println(message.data());
+  // }
+  // sendToClient(response);  // send the response built above
 }
 
 void onEventsCallback(WebsocketsEvent event, String data) {
