@@ -42,10 +42,10 @@ int status = WL_IDLE_STATUS;
 using namespace websockets2_generic;
 
 WebsocketsServer server;
-WebsocketsClient client;
-bool clientConnected = false;
-unsigned long lastAlive = 0;     // timestamp of last alive message from client
-unsigned long lastPingTime = 0;  // timestamp of last alive message from client
+WebsocketsClient[] clients;
+bool[] clientsConnected = [false, false];
+unsigned long[] lastAlive = [0, 0];     // timestamp of last alive message from client
+unsigned long[] lastPingTime = [0, 0];  // timestamp of last alive message from client
 
 long interval = 3000;
 
@@ -56,7 +56,7 @@ void printWifiStatus() {
 
   // print your board's IP address:
   IPAddress ip = WiFi.localIP();
-  Serial.print("Local WIFI IP Address: ");
+  Serial.print("Local IP Address: ");
   Serial.println(ip);
 }
 
@@ -65,12 +65,11 @@ void printWifiStatus() {
 * Client is expected to return "1" when it receives a "0" message, so a ping is us requesting a response. If client has sent messages recently, we don't bother pinging.
 * Can adjust the timing depending on how urgently we want to stop the motors if we get disconnected.
 */
-void checkClientStatus() {
+void checkClientStatus(int i) {
   if (millis() - lastAlive > 3000 && millis() - lastPingTime > 200 && clientConnected)  // The client sends a ping every 2 seconds, so timeout on 5
   {
     Serial.println("Client inactive for 3 seconds, sending a ping");
-    // client.send("0");
-    client.ping();
+    client[i].ping();
     lastPingTime = millis();
   }
   if (millis() - lastAlive > 5000 && clientConnected)  // The client sends a ping every 2 seconds, so timeout on 5
@@ -81,8 +80,8 @@ void checkClientStatus() {
     Serial.println(String(lastAlive));
 
     // phone has lost connection here
-    client.close();
-    clientConnected = false;
+    client[i].close();
+    clientsConnected[i] = false;
     Serial.println("Connection closed: Client inactive for 5 seconds. Stopping motors.");
     handleMove(0, 0);  // this stops any currently looping movement
   }
@@ -204,18 +203,21 @@ void onEventsCallback(WebsocketsEvent event, String data) {
 }
 
 void loop() {
-  if (!clientConnected) {
-    client = server.accept();
-    if (client.available()) {
-      client.onMessage(onMessagesCallback);
-      client.onEvent(onEventsCallback);
-      Serial.println("Client connected.");
-
-      clientConnected = true;
-      lastAlive = millis();
-      // phone is connected here
+  for (byte i = 0; i < 2; i++) {
+    if (!clientConnected[i]) {
+      client[i] = server.accept();
+      if (client[i].available()) {
+        client[i].onMessage(onMessagesCallback);
+        client[i].onEvent(onEventsCallback);
+        Serial.print("Client ");
+        Serial.print(i);
+          Serial.println(" connected.");
+        clientConnected = true;
+        lastAlive = millis();
+        // phone is connected here
+      }
     }
+    client[i].poll();
+    checkClientStatus(i);
   }
-  client.poll();
-  checkClientStatus();
 }

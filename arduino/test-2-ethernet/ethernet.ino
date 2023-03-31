@@ -23,6 +23,7 @@ void ethernetLoop() {
     while (size--) {
       bundleIN.fill(Udp.read(packetBuffer, CUSTOM_PACKET_MAX_SIZE));
     }
+    
     if (!bundleIN.hasError()) {
       // handle incoming messages
       bundleIN.route("/move", handleMove);
